@@ -37,6 +37,12 @@ return [
 
     'mailers' => [
 
+        'mailjet' => [
+        'transport' => 'mailjet',
+        'api_key' => env('MAIL_USERNAME'),
+        'api_secret' => env('MAIL_PASSWORD'),
+        ],
+
         'smtp' => [
             'transport' => 'smtp',
             'url' => env('MAIL_URL'),

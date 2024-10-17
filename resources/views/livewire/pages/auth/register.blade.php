@@ -18,7 +18,7 @@ new #[Layout('layouts.guest')] class extends Component
     /**
      * Handle an incoming registration request.
      */
-    public function register(): void
+    public function register()
     {
         $validated = $this->validate([
             'name' => ['required', 'string', 'max:255'],
@@ -26,13 +26,18 @@ new #[Layout('layouts.guest')] class extends Component
             'password' => ['required', 'string', 'confirmed', 'min:8', 'regex:/[A-Z]/', 'regex:/[0-9]/'],
         ]);
 
+        $activationCode = Str::random(10); // Generate a random string of 10 characters
         $validated['password'] = Hash::make($validated['password']);
 
-        event(new Registered($user = User::create($validated)));
+        $user = User::create(array_merge($validated, ['activation_code' => $activationCode]));
 
-        Auth::login($user);
+        // Send the activation email
+        Mail::to($user->email)->send(new \App\Mail\ActivationMail($user, $activationCode));
 
-        $this->redirect(route('dashboard', absolute: false), navigate: true);
+
+        //Auth::login($user);
+
+        return redirect()->route('activation-page');
     }
 }; ?>
 
