@@ -4,6 +4,7 @@ use App\Livewire\Forms\LoginForm;
 use Illuminate\Support\Facades\Session;
 use Livewire\Attributes\Layout;
 use Livewire\Volt\Component;
+use App\Models\User;
 
 new #[Layout('layouts.guest')] class extends Component
 {
@@ -16,10 +17,23 @@ new #[Layout('layouts.guest')] class extends Component
     {
         $this->validate();
 
+        // First, find the user by the email
+        $user = User::where('email', $this->form->email)->first();
+
+        // Check if user exists and if the account is active (is_active = 1)
+        if (!$user || $user->is_active !== 1) {
+            // If the user is not active, redirect back with an error message
+            session()->flash('error', 'Your account is not activated. Please check your email for the activation link.');
+            return;
+        }
+
+        // Authenticate the user if active
         $this->form->authenticate();
 
+        // Regenerate session to prevent session fixation attacks
         Session::regenerate();
 
+        // Redirect to intended route
         $this->redirectIntended(default: route('dashboard', absolute: false), navigate: true);
     }
 }; ?>
@@ -29,6 +43,14 @@ new #[Layout('layouts.guest')] class extends Component
     <x-auth-session-status class="mb-4" :status="session('status')" />
 
     <form wire:submit="login">
+            <div>
+            @if (session()->has('error'))
+                <div class="mb-4 text-red-600">
+                    {{ session('error') }}
+                </div>
+            @endif
+            </div>
+
         <!-- Email Address -->
         <div>
             <x-input-label for="email" :value="__('Email')" />

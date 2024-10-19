@@ -35,4 +35,9 @@ return [
         ],
     ],
 
+    'mailjet' => [
+    'key' => env('MAIL_USERNAME'),
+    'secret' => env('MAIL_PASSWORD'),
+],
+
 ];
