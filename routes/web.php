@@ -4,7 +4,8 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\ActivationMail;
 use App\Livewire\ActivateAccount;
-use App\Models\User;  // Make sure to import the User model
+use App\Models\User;  
+use App\Livewire\MapComponent;
 
 Route::view('/', 'welcome');
 
@@ -17,6 +18,8 @@ Route::view('profile', 'profile')
     ->name('profile');
 
 Route::get('/activate', ActivateAccount::class)->name('activation-page');
+
+Route::get('/map', [MapComponent::class, 'render'])->name('map');
 
 
 
