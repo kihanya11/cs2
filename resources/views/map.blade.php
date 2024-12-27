@@ -11,6 +11,11 @@
                 <div class="p-6 text-gray-900 dark:text-gray-100">
                     <!-- Google Map -->
                     <div id="map" style="height: 500px;"></div>
+
+                    <!-- Display Coordinates -->
+                    <div id="coordinates" class="mt-4">
+                        Click on the map to view GPS coordinates.
+                    </div>
                 </div>
             </div>
         </div>
@@ -18,7 +23,11 @@
 
     <!-- Include the Google Maps API -->
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAdcSrt_L4nlIaUemDt2w24kTY3G5J9zt0&callback=initMap" async defer></script>
+
     <script>
+        let map;          // Declare map variable
+        let marker = null; // Declare marker variable to hold the marker instance
+
         function initMap() {
             // Default map options
             const mapOptions = {
@@ -26,8 +35,8 @@
                 zoom: 12
             };
 
-            // Create map instance
-            const map = new google.maps.Map(document.getElementById("map"), mapOptions);
+            // Create the map instance
+            map = new google.maps.Map(document.getElementById("map"), mapOptions);
 
             // Add a click listener to capture click events
             map.addListener("click", (e) => {
@@ -37,16 +46,22 @@
                 document.getElementById("coordinates").textContent =
                     "Latitude: " + latLng.lat() + ", Longitude: " + latLng.lng();
 
-                // Add marker at clicked location
-                new google.maps.Marker({
+                // If a marker already exists, remove it
+                if (marker) {
+                    marker.setMap(null);
+                }
+
+                // Add a new marker at the clicked location
+                marker = new google.maps.Marker({
                     position: latLng,
                     map: map,
-                    title: "Selected Location"
+                    title: "Selected Location",
+                    draggable: true // Make the marker draggable if you want to allow users to adjust it
                 });
             });
         }
 
-        // Call initMap after the window is fully loaded
+        // Ensure initMap is called after the window is fully loaded
         window.addEventListener('load', () => {
             initMap();
         });
