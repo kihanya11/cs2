@@ -30,12 +30,14 @@
                                 <th class="border px-4 py-2">Humidity</th>
                                 <th class="border px-4 py-2">Wind Speed</th>
                                 <th class="border px-4 py-2">Cloud Coverage</th>
+                                <th class="border px-4 py-2">Solar Radiation (W/m²)</th> <!-- New column for Solar Radiation -->
                             </tr>
                         </thead>
                         <tbody id="weatherDataTable">
                             <!-- Weather Data will be inserted here -->
                         </tbody>
                     </table>
+
                 </div>
             </div>
         </div>
@@ -103,12 +105,13 @@
 
             // Example of how to insert data into the table
             const weatherTable = document.getElementById("weatherDataTable");
-            weatherTable.innerHTML = `
+            weatherTable.innerHTML = ` 
                 <tr>
                     <td class="border px-4 py-2">${data.main.temp} °C</td>
                     <td class="border px-4 py-2">${data.main.humidity} %</td>
                     <td class="border px-4 py-2">${data.wind.speed} m/s</td>
                     <td class="border px-4 py-2">${data.clouds.all} %</td>
+                    <td class="border px-4 py-2">${data.solar_radiation.toFixed(2)} W/m²</td>
                 </tr>
             `;
         })
@@ -116,6 +119,7 @@
             console.error("Error in fetch:", error); // Debug
         });
 }
+
 
     </script>
 </x-app-layout>

@@ -2,12 +2,21 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\SolarRadiationService;  // Import SolarRadiationService
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 class WeatherController extends Controller
 {
+    protected $solarRadiationService;
+
+    // Inject SolarRadiationService into the controller
+    public function __construct(SolarRadiationService $solarRadiationService)
+    {
+        $this->solarRadiationService = $solarRadiationService;
+    }
+
     public function getWeather(Request $request)
     {
         // OpenWeatherMap API key (use env variable for security)
@@ -28,7 +37,21 @@ class WeatherController extends Controller
         // Log the response for debugging
         Log::info('OpenWeatherMap Response:', $response->json());
 
-        // Return the response as is (Laravel will handle any issues)
-        return response()->json($response->json());
+        // Extract necessary data from the OpenWeather response
+        $data = $response->json();
+        $cloudCover = $data['clouds']['all'];  // Cloud cover percentage
+        $timestamp = $data['dt'];  // Unix timestamp
+        $temperature = $data['main']['temp'];  // Temperature (needed for the table)
+        $humidity = $data['main']['humidity'];  // Humidity (needed for the table)
+        $windSpeed = $data['wind']['speed'];  // Wind Speed (needed for the table)
+
+        // Call the SolarRadiationService to calculate solar radiation
+        $solarRadiation = $this->solarRadiationService->calculateSolarRadiation($latitude, $cloudCover, $timestamp);
+        
+        // Add solar radiation to the weather data
+        $data['solar_radiation'] = $solarRadiation;
+
+        // Return the weather data with solar radiation included
+        return response()->json($data);
     }
 }
