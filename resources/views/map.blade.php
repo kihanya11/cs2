@@ -16,6 +16,26 @@
                     <div id="coordinates" class="mt-4">
                         Click on the map to view GPS coordinates.
                     </div>
+
+                    <!-- Weather Button -->
+                    <button id="getWeatherBtn" class="weather-button mt-4">
+                        Get Weather Data
+                    </button>
+
+                    <!-- Weather Data Table -->
+                    <table class="mt-4 border-collapse w-full">
+                        <thead>
+                            <tr>
+                                <th class="border px-4 py-2">Temperature</th>
+                                <th class="border px-4 py-2">Humidity</th>
+                                <th class="border px-4 py-2">Wind Speed</th>
+                                <th class="border px-4 py-2">Cloud Coverage</th>
+                            </tr>
+                        </thead>
+                        <tbody id="weatherDataTable">
+                            <!-- Weather Data will be inserted here -->
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
@@ -25,45 +45,77 @@
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAdcSrt_L4nlIaUemDt2w24kTY3G5J9zt0&callback=initMap" async defer></script>
 
     <script>
-        let map;          // Declare map variable
-        let marker = null; // Declare marker variable to hold the marker instance
+        let clickedLat = null;
+        let clickedLng = null;
+        let map;
+        let marker = null;
 
         function initMap() {
-            // Default map options
             const mapOptions = {
-                center: { lat: -1.286389, lng: 36.817223 }, // Nairobi coordinates
+                center: { lat: -1.286389, lng: 36.817223 },
                 zoom: 12
             };
 
-            // Create the map instance
             map = new google.maps.Map(document.getElementById("map"), mapOptions);
 
-            // Add a click listener to capture click events
+            // Add click listener to the map to capture the coordinates and add the pin (marker)
             map.addListener("click", (e) => {
-                const latLng = e.latLng; // Get clicked location (lat, lng)
+                clickedLat = e.latLng.lat();
+                clickedLng = e.latLng.lng();
 
-                // Display coordinates in the div
+                // Show the coordinates in the div
                 document.getElementById("coordinates").textContent =
-                    "Latitude: " + latLng.lat() + ", Longitude: " + latLng.lng();
+                    "Latitude: " + clickedLat + ", Longitude: " + clickedLng;
 
-                // If a marker already exists, remove it
+                // Remove the previous marker if it exists
                 if (marker) {
                     marker.setMap(null);
                 }
 
                 // Add a new marker at the clicked location
                 marker = new google.maps.Marker({
-                    position: latLng,
+                    position: e.latLng,
                     map: map,
-                    title: "Selected Location",
-                    draggable: true // Make the marker draggable if you want to allow users to adjust it
+                    title: "Selected Location"
                 });
+            });
+
+            // Event listener for the "Get Weather" button
+            document.getElementById("getWeatherBtn").addEventListener("click", function() {
+                if (clickedLat && clickedLng) {
+                    fetchWeatherData(clickedLat, clickedLng);
+                } else {
+                    alert("Please click on the map to select a location first.");
+                }
             });
         }
 
-        // Ensure initMap is called after the window is fully loaded
-        window.addEventListener('load', () => {
-            initMap();
+    // Fetch weather data based on selected coordinates
+    function fetchWeatherData(lat, lng) {
+    fetch(`/fetch-weather?lat=${lat}&lng=${lng}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.cod !== 200) {
+                // Handle error if response code isn't 200 (successful)
+                alert("Error: " + (data.message || "Weather data not available."));
+                return;
+            }
+
+            // Example of how to insert data into the table
+            const weatherTable = document.getElementById("weatherDataTable");
+            weatherTable.innerHTML = `
+                <tr>
+                    <td class="border px-4 py-2">${data.main.temp} °C</td>
+                    <td class="border px-4 py-2">${data.main.humidity} %</td>
+                    <td class="border px-4 py-2">${data.wind.speed} m/s</td>
+                    <td class="border px-4 py-2">${data.clouds.all} %</td>
+                </tr>
+            `;
+        })
+        .catch(error => {
+            console.error("Error in fetch:", error); // Debug
         });
+}
+
     </script>
 </x-app-layout>
