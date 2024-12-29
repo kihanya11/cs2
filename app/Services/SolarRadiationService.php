@@ -9,19 +9,24 @@ class SolarRadiationService
     // Constants
     const G_SC = 1367; // Solar constant (W/m^2)
     
-    public function calculateSolarRadiation(float $lat, float $cloudCover, int $timestamp): float
+    public function calculateSolarRadiation(float $lat, float $cloudCover, int $timestamp, int $timezoneOffset): float
     {
-        // Convert timestamp to Carbon object for easy handling
+        // Convert timestamp to Carbon object
         $date = Carbon::createFromTimestamp($timestamp);
-        $n = $date->dayOfYear;  // Day of the year
+
+        // Apply timezone offset to get local time
+        $localTimestamp = $timestamp + $timezoneOffset;
+        $localDate = Carbon::createFromTimestamp($localTimestamp);
+
+        $n = $localDate->dayOfYear;  // Day of the year
         
         // Step 1: Calculate Solar Declination
         $declination = 23.45 * sin(deg2rad(360 * (284 + $n) / 365));
         
         // Step 2: Calculate Hour Angle
-        $solarTime = $date->hour + ($date->minute / 60);
+        $solarTime = $localDate->hour + ($localDate->minute / 60);
         
-        // Adjust for night time (solar time outside 6 AM - 6 PM)
+        // Check for nighttime based on solar time
         if ($solarTime < 6 || $solarTime > 18) {
             // Return zero radiation if the sun is not up (night time)
             return 0.0;

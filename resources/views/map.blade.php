@@ -31,6 +31,7 @@
                                 <th class="border px-4 py-2">Wind Speed</th>
                                 <th class="border px-4 py-2">Cloud Coverage</th>
                                 <th class="border px-4 py-2">Solar Radiation (W/m²)</th> <!-- New column for Solar Radiation -->
+                                <th class="border px-4 py-2">Solar Azimuth</th>
                             </tr>
                         </thead>
                         <tbody id="weatherDataTable">
@@ -112,6 +113,7 @@
                     <td class="border px-4 py-2">${data.wind.speed} m/s</td>
                     <td class="border px-4 py-2">${data.clouds.all} %</td>
                     <td class="border px-4 py-2">${data.solar_radiation.toFixed(2)} W/m²</td>
+                    <td class="border px-4 py-2">${data.solar_azimuth} °</td>
                 </tr>
             `;
         })

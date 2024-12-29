@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Services\SolarRadiationService;  // Import SolarRadiationService
+use App\Services\SolarAzimuthService;  // Import SolarAzimuthService
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -10,11 +11,13 @@ use Illuminate\Support\Facades\Log;
 class WeatherController extends Controller
 {
     protected $solarRadiationService;
+    protected $solarAzimuthService;
 
-    // Inject SolarRadiationService into the controller
-    public function __construct(SolarRadiationService $solarRadiationService)
+    // Inject SolarRadiationService and SolarAzimuthService into the controller
+    public function __construct(SolarRadiationService $solarRadiationService, SolarAzimuthService $solarAzimuthService)
     {
         $this->solarRadiationService = $solarRadiationService;
+        $this->solarAzimuthService = $solarAzimuthService;
     }
 
     public function getWeather(Request $request)
@@ -41,17 +44,22 @@ class WeatherController extends Controller
         $data = $response->json();
         $cloudCover = $data['clouds']['all'];  // Cloud cover percentage
         $timestamp = $data['dt'];  // Unix timestamp
+        $timezoneOffset = $data['timezone'];  // Timezone offset in seconds
         $temperature = $data['main']['temp'];  // Temperature (needed for the table)
         $humidity = $data['main']['humidity'];  // Humidity (needed for the table)
         $windSpeed = $data['wind']['speed'];  // Wind Speed (needed for the table)
 
         // Call the SolarRadiationService to calculate solar radiation
-        $solarRadiation = $this->solarRadiationService->calculateSolarRadiation($latitude, $cloudCover, $timestamp);
+        $solarRadiation = $this->solarRadiationService->calculateSolarRadiation($latitude, $cloudCover, $timestamp, $timezoneOffset);
         
-        // Add solar radiation to the weather data
-        $data['solar_radiation'] = $solarRadiation;
+        // Call the SolarAzimuthService to calculate solar azimuth
+        $solarAzimuth = $this->solarAzimuthService->calculateSolarAzimuth($latitude, $timestamp, $timezoneOffset);
 
-        // Return the weather data with solar radiation included
+        // Add solar radiation and azimuth to the weather data
+        $data['solar_radiation'] = $solarRadiation;
+        $data['solar_azimuth'] = $solarAzimuth;
+
+        // Return the weather data with solar radiation and azimuth included
         return response()->json($data);
     }
 }
